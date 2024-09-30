@@ -31,7 +31,7 @@ Clone the repository
   cd addressForm
 
 ```
-Install Dependecy
+Install Dependency
 
 ```bash
   npm install
@@ -41,6 +41,9 @@ Run the Server
  nodemon server.js
 ```
 Open index.html in your browser
+
+## Screenshot
+![Screenshot 2024-09-30 155901](https://github.com/user-attachments/assets/6669d7c1-77e2-4412-bff4-d7bcab08cc30)
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
