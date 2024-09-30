@@ -1,11 +1,13 @@
 <!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Address Form</title>
 </head>
+
 <body>
     <h1>Submit User and Address</h1>
     <form id="user-form">
@@ -17,6 +19,7 @@
         <br>
         <button type="submit">Submit</button>
     </form>
+
     <h2>Saved Users and Addresses</h2>
     <ul id="user-list"></ul>
 
@@ -34,25 +37,56 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                this.reset();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    this.reset();
+                    fetchUsers(); // Refresh user list after submission
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         });
+
         function fetchUsers() {
             fetch('http://localhost:3000/users')
                 .then(response => response.json())
                 .then(users => {
                     const userList = document.getElementById('user-list');
                     userList.innerHTML = ''; // Clear existing list
+
+                    const uniqueUsers = {};
+
+                    // Consolidate users by name
                     users.forEach(user => {
+                        if (!uniqueUsers[user.name]) {
+                            uniqueUsers[user.name] = {
+                                id: user.id,
+                                name: user.name,
+                                addresses: []
+                            };
+                        }
+                        // Add address to the consolidated user
+                        user.addresses.forEach(address => {
+                            uniqueUsers[user.name].addresses.push(address);
+                        });
+                    });
+
+                    // Display unique users with their addresses
+                    Object.values(uniqueUsers).forEach(user => {
                         const li = document.createElement('li');
-                        li.textContent = `Name: ${user.name}, Address: ${user.address || 'No address'}`;
-                        userList.appendChild(li);
+                        li.textContent = `Name: ${user.name}`;
+
+                        // Create a nested list for addresses
+                        const addressList = document.createElement('ul');
+                        user.addresses.forEach(address => {
+                            const addressItem = document.createElement('li');
+                            addressItem.textContent = address;
+                            addressList.appendChild(addressItem);
+                        });
+
+                        li.appendChild(addressList); // Append addresses to user
+                        userList.appendChild(li); // Append user to the main list
                     });
                 })
                 .catch(error => {
@@ -60,8 +94,10 @@
                 });
         }
 
+
         // Fetch users on page load
         fetchUsers();
     </script>
 </body>
+
 </html>

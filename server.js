@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors()); // Enable CORS for all routes
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -16,7 +16,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/submit', (req, res) => {
     const { name, address } = req.body;
 
-    console.log(name,address,"ghgh")
     // Insert user into User table
     db.run(`INSERT INTO User (name) VALUES (?)`, [name], function (err) {
         if (err) {
@@ -34,6 +33,7 @@ app.post('/submit', (req, res) => {
     });
 });
 
+// Route to fetch users and their addresses
 app.get('/users', (req, res) => {
     db.all(`SELECT User.id AS userId, User.name, Address.address
             FROM User
@@ -41,9 +41,26 @@ app.get('/users', (req, res) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(rows);
+        
+        // Transform the data to group addresses under their respective users
+        const users = {};
+        rows.forEach(row => {
+            if (!users[row.userId]) {
+                users[row.userId] = {
+                    id: row.userId,
+                    name: row.name,
+                    addresses: []
+                };
+            }
+            if (row.address) {
+                users[row.userId].addresses.push(row.address);
+            }
+        });
+
+        res.json(Object.values(users)); // Return users as an array
     });
 });
+
 
 // Start server
 app.listen(PORT, () => {
